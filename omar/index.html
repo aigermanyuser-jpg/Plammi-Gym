@@ -187,6 +187,14 @@ input.txt{width:100%;border:1px solid var(--line);background:var(--sunk);border-
 .wrow{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;font-size:14px}
 .backup textarea{width:100%;min-height:90px;border:1px solid var(--line);border-radius:10px;background:var(--sunk);color:var(--ink);font:12px ui-monospace,Menlo,monospace;padding:8px;direction:ltr}
 .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.faq{display:grid}
+.faq details{border-bottom:1px solid var(--line);padding-block:10px}
+.faq details:last-child{border-bottom:0}
+.faq summary{font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--accent);font-weight:700}
+.faq details[open] summary::after{content:"−"}
+.faq p{margin:8px 0 0;color:var(--muted);font-size:14px;max-width:65ch}
 .tips{margin:0;padding-inline-start:18px;display:grid;gap:6px}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-top:1px solid var(--line);
@@ -259,7 +267,7 @@ de:{brand:'Omar <span>Gym</span>',t_today:"Heute",t_plan:"Plan",t_muscles:"Muske
  how4:"„Angeschlagen“ heißt: −10 % Gewicht, ein Satz weniger, zählt nicht für die Steigerung.",
  backup:"Backup",backup_hint:"Deine Daten liegen nur auf diesem Handy. Kopiere ab und zu ein Backup in deine Notizen.",
  b_copy:"Backup kopieren",b_load:"Backup laden",b_copied:"Kopiert. Füge es in Notizen ein.",b_sel:"Text markiert. Tippe auf Kopieren.",b_loaded:"Backup geladen.",b_bad:"Das ist kein gültiges Backup.",b_ph:"Backup-Text hier einfügen",
- saved:"Gespeichert auf diesem Handy",kg:"kg"},
+ saved:"Gespeichert auf diesem Handy",kg:"kg",help:"Hilfe: häufige Fragen",help_link:"Fragen? Hilfe ansehen"},
 ar:{brand:'جيم <span>عمر</span>',t_today:"اليوم",t_plan:"الخطة",t_muscles:"العضلات",t_more:"المزيد",
  welcome:"أهلاً يا عمر",welcome_txt:"اصنع خطتك الأسبوعية بنفسك. ابدأ بخطة جاهزة وعدّلها، أو ابدأ من الصفر.",
  rest_day:"يوم راحة",rest_sub:"الراحة جزء من التمرين",next:"التمرين القادم",train_other:"تمرّن بخطة يوم آخر",
@@ -290,7 +298,7 @@ ar:{brand:'جيم <span>عمر</span>',t_today:"اليوم",t_plan:"الخطة",
  how4:"«متعب» يعني: وزن أقل بـ10٪ ومجموعة واحدة أقل، ولا يُحتسب للتقدّم.",
  backup:"نسخة احتياطية",backup_hint:"بياناتك محفوظة على هذا الهاتف فقط. انسخ نسخة احتياطية إلى الملاحظات من وقت لآخر.",
  b_copy:"نسخ النسخة الاحتياطية",b_load:"استعادة النسخة الاحتياطية",b_copied:"تم النسخ. الصقها في الملاحظات.",b_sel:"تم تحديد النص. اضغط على «نسخ».",b_loaded:"تمت الاستعادة.",b_bad:"هذا النص ليس نسخة احتياطية صالحة.",b_ph:"الصق نص النسخة الاحتياطية هنا",
- saved:"محفوظ على هذا الهاتف",kg:"كغ"}
+ saved:"محفوظ على هذا الهاتف",kg:"كغ",help:"المساعدة والأسئلة الشائعة",help_link:"هل لديك سؤال؟ افتح المساعدة"}
 };
 const WDAY = {de:["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"],ar:["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"]};
 const WSHORT = {de:["So","Mo","Di","Mi","Do","Fr","Sa"],ar:["أحد","اثنين","ثلاثاء","أربعاء","خميس","جمعة","سبت"]};
@@ -535,7 +543,8 @@ function viewOnboarding(){
   return `<section class="hero"><h1>${t("welcome")}</h1><div class="sub">${t("welcome_txt")}</div></section>
   <div class="card"><div class="eyebrow">${t("tpl")}</div>
    <div class="list">${["full","ul","ppl"].map(k=>`<button class="btn ghost" type="button" data-tpl="${k}">${t("tpl_"+k)}</button>`).join("")}
-   <button class="btn primary" type="button" data-tpl="empty">${t("tpl_empty")}</button></div></div>`;
+   <button class="btn primary" type="button" data-tpl="empty">${t("tpl_empty")}</button></div></div>
+  <button class="linkbtn" type="button" data-help="1">${t("help_link")}</button>`;
 }
 function nextTraining(ds){const d=parse(ds);for(let i=1;i<8;i++){const x=new Date(d);x.setDate(d.getDate()+i);if(isTraining(x.getDay()))return x}return null}
 
@@ -717,6 +726,7 @@ function viewMore(){
   const hist=S.history.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,20);
   return `<section class="hero"><h1>${t("t_more")}</h1></section><div class="list">
   <div class="card"><div class="eyebrow">${t("language")}</div><div class="seg two"><button type="button" data-lang="de" aria-pressed="${S.lang==="de"}">Deutsch</button><button type="button" data-lang="ar" aria-pressed="${S.lang==="ar"}">العربية</button></div></div>
+  <div class="card" id="help"><div class="eyebrow">${t("help")}</div><div class="faq">${HELP[S.lang].map(([q,ans])=>`<details><summary>${q}</summary><p>${ans}</p></details>`).join("")}</div></div>
   <div class="card"><div class="eyebrow">${t("how")}</div><ul class="tips"><li>${t("how1")}</li><li>${t("how2")}</li><li>${t("how3")}</li><li>${t("how4")}</li></ul></div>
   <div class="card"><div class="eyebrow">${t("history")}</div><div class="hist">${hist.length?hist.map(h=>`<div class="num"><span>${fmtDate(h.date)} · ${esc(h.name)}</span><span>${h.sets} ${t("sets_short")}</span></div>`).join(""):`<p class="hint">${t("no_hist")}</p>`}</div></div>
   ${items.length?`<div class="card"><div class="eyebrow">${t("weights")}</div><p class="hint">${t("weights_hint")}</p>${items.map(({it,d})=>`<div class="wrow"><span>${WSHORT[S.lang][d]} · ${esc(exName(it.ex))}</span><div class="field"><input inputmode="decimal" id="wk-${it.id}" data-wk="${it.id}" value="${S.weights[it.id]!=null?kg(S.weights[it.id]):""}" placeholder="–"><span>${t("kg")}</span></div></div>`).join("")}</div>`:""}
@@ -724,6 +734,29 @@ function viewMore(){
    <textarea id="bk" placeholder="${t("b_ph")}"></textarea><div class="btnrow"><button class="btn ghost small" type="button" id="bkCopy">${t("b_copy")}</button><button class="btn ghost small" type="button" id="bkLoad">${t("b_load")}</button></div><p class="hint" id="bkMsg"></p></div></div>`;
 }
 
+
+const HELP = {
+de:[["Wie fange ich an?","Öffne „Plan“. Lade eine Vorlage oder starte mit einem leeren Plan. Tippe dann auf einen Wochentag und füge Übungen hinzu. Ein Tag ohne Übungen ist ein Ruhetag."],
+ ["Wie füge ich Übungen hinzu?","Tag öffnen → „Übung hinzufügen“. Wähle Vorderseite oder Rückseite, tippe auf einen Muskel und dann auf das + neben der Übung. Du kannst auch oben suchen. Fehlt eine Übung, lege sie unten als „Eigene Übung“ an."],
+ ["Wie stelle ich Sätze und Wiederholungen ein?","Im Tag kannst du bei jeder Übung die Sätze (− / +), den Wiederholungsbereich (z. B. 8–12), die Pause und das Startgewicht einstellen. Mit ↑ ↓ änderst du die Reihenfolge, mit ✕ löschst du die Übung."],
+ ["Wie trainiere ich?","Unter „Heute“ steht dein Training für heute. Trag Gewicht und Wiederholungen ein und tippe auf den Haken. Danach startet der Pausentimer. Erledigte Übungen werden grün und rutschen nach unten."],
+ ["Was bedeutet „Ziel“?","Das Gewicht bleibt gleich. Das Ziel ist eine Wiederholung mehr als beim letzten Mal. Schaffst du in allen Sätzen das obere Ende, nimmt die App beim nächsten Mal mehr Gewicht."],
+ ["Warum ist das Gewicht gesperrt?","Damit du mit dem gleichen Gewicht arbeitest und dich über die Wiederholungen steigerst. Ist ein Gerät belegt, tippe auf „Gewicht heute ändern“."],
+ ["Was mache ich am Ende?","Tippe auf „Training abschließen“. Nur dann rechnet die App deine neuen Gewichte und Ziele aus."],
+ ["Ich trainiere heute einen anderen Tag.","Unter „Heute“ auf „Anderen Tag trainieren“ tippen und den Tag wählen."],
+ ["Was zeigt „Muskeln“?","Wie viele Sätze jeder Muskel pro Woche aus deinem Plan bekommt. Etwa 10–20 Sätze pro Woche sind für Muskelaufbau ein guter Bereich."],
+ ["Wo sind meine Daten?","Nur auf diesem Handy. Kopiere ab und zu ein Backup in deine Notizen. Auf einem neuen Handy fügst du den Text ein und tippst auf „Backup laden“."]],
+ar:[["كيف أبدأ؟","افتح «الخطة». حمّل خطة جاهزة أو ابدأ بخطة فارغة. ثم اضغط على يوم من أيام الأسبوع وأضف التمارين. أي يوم بلا تمارين يُعدّ يوم راحة."],
+ ["كيف أضيف تمريناً؟","افتح اليوم المطلوب ← «إضافة تمرين». اختر الأمام أو الخلف، اضغط على عضلة، ثم اضغط على + بجانب التمرين. يمكنك أيضاً البحث في الأعلى. إذا لم تجد التمرين، أنشئه في الأسفل كـ«تمرين مخصّص»."],
+ ["كيف أحدد المجموعات والتكرارات؟","داخل اليوم، يمكنك أن تحدد لكل تمرين عدد المجموعات (− / +)، ونطاق التكرارات (مثلاً 8–12)، ومدة الراحة، ووزن البداية. بالأسهم ↑ ↓ تغيّر الترتيب، وبـ ✕ تحذف التمرين."],
+ ["كيف أتمرّن؟","في «اليوم» تجد تمرين اليوم. أدخل الوزن والتكرارات واضغط على علامة الصح. بعدها يبدأ مؤقّت الراحة. التمارين المنجزة تصبح خضراء وتنتقل إلى الأسفل."],
+ ["ماذا يعني «الهدف»؟","الوزن يبقى نفسه. الهدف هو تكرار واحد أكثر من المرة السابقة. إذا وصلت إلى الحد الأعلى في كل المجموعات، يزيد التطبيق الوزن في المرة القادمة."],
+ ["لماذا الوزن مقفل؟","حتى تتمرّن بنفس الوزن وتتقدّم بزيادة التكرارات. إذا كان الجهاز مشغولاً، اضغط على «تغيير الوزن اليوم»."],
+ ["ماذا أفعل في النهاية؟","اضغط على «إنهاء التمرين». عندها فقط يحسب التطبيق أوزانك وأهدافك الجديدة."],
+ ["أريد أن أتمرّن اليوم بخطة يوم آخر.","في «اليوم» اضغط على «تمرّن بخطة يوم آخر» ثم اختر اليوم الذي تريده."],
+ ["ماذا تعرض صفحة «العضلات»؟","عدد المجموعات التي تحصل عليها كل عضلة في الأسبوع حسب خطتك. النطاق الجيد لبناء العضلات هو حوالي 10–20 مجموعة في الأسبوع."],
+ ["أين بياناتي؟","على هذا الهاتف فقط. انسخ نسخة احتياطية إلى الملاحظات من وقت لآخر. وعلى هاتف جديد، الصق النص ثم اضغط على «استعادة النسخة الاحتياطية»."]]
+};
 /* ================= Timer ================= */
 let tEnd=0,tLabel="",tInt=null,tRang=false,actx=null,wake=null;
 function unlockAudio(){try{if(!actx){const A=window.AudioContext||window.webkitAudioContext;if(A)actx=new A()}if(actx&&actx.state==="suspended")actx.resume()}catch(e){}}
@@ -759,6 +792,7 @@ document.getElementById("view").addEventListener("click",e=>{
   if(d.lang){S.lang=d.lang;save();render();return}
   if(d.tpl){ if(S.plan && tplArm!==d.tpl){tplArm=d.tpl;keepScroll(render);return} tplArm=null; loadTemplate(d.tpl); tab="plan"; editDay=null; render(); window.scrollTo(0,0); return }
   if(d.go){tab=d.go;render();return}
+  if(d.help){tab="more";render();const h=document.getElementById("help");h&&h.scrollIntoView();return}
   if(d.edit!=null){editDay=Number(d.edit);copyMsg=null;render();window.scrollTo(0,0);return}
   if(d.back){editDay=null;render();return}
   if(d.add!=null){picker={day:Number(d.add),side:"front",region:null,mus:null,q:""};renderSheet();return}
