@@ -227,6 +227,8 @@ const EX = {
   smith_press:{g:"fd",n:"Schulterpresse Smith Machine",inc:2.5,cue:"Stange vor dem Gesicht, Ellbogen leicht nach vorne. Gewicht beim ersten Mal eintragen."},
   lateral:{g:"sd",n:"Seitheben Kurzhanteln",inc:1,unit:"kg je Hand",cue:"Ellbogen führen, kein Schwung. Leicht nach vorne gelehnt."},
   preacher:{g:"bi",n:"Preacher Curl Maschine",inc:2.5,cue:"Unten volle Streckung, langsam ablassen."},
+  incline_curl:{g:"bi",n:"Schrägbank-Curls Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Bank auf ca. 45°, Arme hängen hinter dem Körper. Maximale Dehnung, gut für den langen Bizepskopf."},
+  lat_cable:{g:"sd",n:"Seitheben am Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel kommt von unten hinter dem Körper, so ist die Spannung auch unten da."},
   hammer:{g:"bi",n:"Hammer Curl Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Daumen oben, Ellbogen fest am Körper. Trifft auch den Brachialis, macht den Arm dicker."},
   cable_curl:{g:"bi",n:"Bizeps-Curl Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel hinter dem Körper für mehr Dehnung."},
   latpull:{g:"ba",n:"Latzug breit",inc:2.5,cue:"Brust raus, Ellbogen Richtung Hüfte ziehen."},
@@ -263,15 +265,17 @@ const DAYS = {
     {k:"ohe",sets:3,lo:8,hi:12,rest:90},
     {k:"pushdown",sets:2,lo:10,hi:15,rest:60},
     {k:"revfly",sets:3,lo:12,hi:20,rest:60}]},
-  3:{t:"Brust Volumen",s:"Bizeps · Seitheben · Beine",items:[
+  3:{t:"Brust Volumen",get s(){return S.kneePause?"Bizeps · Schultern":"Bizeps · Seitheben · Beine"},items:[
     {k:"bench_volume",sets:4,lo:6,hi:8,rest:150},
     {k:"chest_press",sets:3,lo:8,hi:12,rest:120},
     {k:"fly",sets:3,lo:12,hi:15,rest:60},
+    {k:"incline_curl",sets:3,lo:8,hi:12,rest:90,kneeOnly:true},
     {k:"hammer",sets:2,lo:10,hi:12,rest:60},
     {k:"lateral",sets:3,lo:12,hi:15,rest:60},
-    {k:"leg_curl",sets:3,lo:10,hi:15,rest:90},
-    {k:"leg_ext",sets:3,lo:10,hi:15,rest:90},
-    {k:"calf",sets:4,lo:10,hi:15,rest:60}]},
+    {k:"lat_cable",sets:3,lo:12,hi:15,rest:60,kneeOnly:true},
+    {k:"leg_curl",sets:3,lo:10,hi:15,rest:90,knee:true},
+    {k:"leg_ext",sets:3,lo:10,hi:15,rest:90,knee:true},
+    {k:"calf",sets:4,lo:10,hi:15,rest:60,knee:true}]},
   4:null,
   5:{t:"Brust Pause",s:"Bizeps · Seitheben",items:[
     {k:"bench_pause",sets:4,reps:4,rest:180},
@@ -295,7 +299,7 @@ const WDL = ["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Sa
 const MON = ["Jan","Feb","März","Apr","Mai","Juni","Juli","Aug","Sep","Okt","Nov","Dez"];
 
 /* ---------- Zustand ---------- */
-const DEFAULT = ()=>({v:1,oneRM:80,weights:{bench_double:75,bench_heavy:67.5,bench_volume:55,bench_pause:60,incline_db:30},
+const DEFAULT = ()=>({v:1,kneePause:true,oneRM:80,weights:{bench_double:75,bench_heavy:67.5,bench_volume:55,bench_pause:60,incline_db:30},
   fails:{},lastReps:{},sessions:{},history:[],updated:0});
 let S = DEFAULT();
 let tab = "heute";
@@ -328,7 +332,7 @@ function buildPlan(day, ds, ready){
   const {week} = weekInfo(ds);
   const deload = week===8 && day!==5;
   const test = week===8 && day===5;
-  let items = def.items.map(x=>({...x}));
+  let items = def.items.filter(x=> S.kneePause ? !x.knee : !x.kneeOnly).map(x=>({...x}));
   if(test){
     items = [{k:"bench_test",sets:3,reps:1,rest:240,test:true},{k:"fly",sets:2,lo:12,hi:15,rest:60},{k:"lateral",sets:2,lo:12,hi:15,rest:60}];
   }
@@ -552,7 +556,8 @@ function newBlockWeights(){
 
 /* ---------- Kalender ---------- */
 let calMonth = null, calSel = null;
-const TAGS = {1:["c","bi"],2:["b"],3:["c","bi","l"],5:["c","bi"],6:["b"]};
+const TAGS = {1:["c","bi"],2:["b"],get 3(){return S.kneePause?["c","bi"]:["c","bi","l"]},5:["c","bi"],6:["b"]};
+const splitTxt = ()=>S.kneePause?"Brust 3× · Rücken 2× · Beine pausiert":"Brust 3× · Rücken 2× · Beine 1×";
 function viewCalendar(){
   const ds = todayIso();
   if(!calMonth){ const d=parse(ds); calMonth=[d.getFullYear(), d.getMonth()]; }
@@ -589,7 +594,7 @@ function viewCalendar(){
       ${calSel===ds?`<button type="button" class="btn primary" data-go="heute">Zum heutigen Training</button>`:""}
       ${calSel>ds?`<p class="hint">Gewichte sind der aktuelle Stand und passen sich nach jedem Training an.</p>`:""}</div>`;
   }
-  return `<section class="hero"><div class="eyebrow">Brust 3× · Rücken 2× · Beine 1×</div><h1>Kalender</h1></section>
+  return `<section class="hero"><div class="eyebrow">${splitTxt()}</div><h1>Kalender</h1></section>
     <div class="card"><div class="calnav"><button type="button" data-calnav="-1" aria-label="Vorheriger Monat">‹</button>
       <h2>${["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"][m]} ${y}</h2>
       <button type="button" data-calnav="1" aria-label="Nächster Monat">›</button></div>
@@ -605,7 +610,7 @@ function viewWeek(){
   const mon = new Date(d); mon.setDate(d.getDate()-((d.getDay()+6)%7));
   const {block,week} = weekInfo(ds);
   let html = `<section class="hero"><div class="eyebrow">Block ${block} · Woche ${week} von 8</div><h1>Deine Woche</h1>
-    <div class="sub">${week===8?"Leichte Woche, Freitag Maximaltest":"Brust 3× · Rücken 2× · Beine 1×"}</div></section><div class="week">`;
+    <div class="sub">${week===8?"Leichte Woche, Freitag Maximaltest":splitTxt()}</div></section><div class="week">`;
   [1,2,3,4,5,6,0].forEach((wd,i)=>{
     const x = new Date(mon); x.setDate(mon.getDate()+i); const xs = iso(x);
     const def = DAYS[wd]; const sess = S.sessions[xs];
@@ -688,7 +693,10 @@ function viewTips(){
     <li>Füße fest in den Boden, Beinantrieb mitnehmen.</li>
     <li>Griff etwas breiter als schulterbreit, Ellbogen 45–70° vom Körper.</li>
     <li>Schwere Sätze nur mit Spotter oder Safety-Pins.</li></ul></div>
-  <div class="card tipblock"><h3>Knie</h3><p>Nach dem Kreuzbandriss: Beinstrecker nur im Bewegungsbereich, den dein Physio freigegeben hat. Beinbeuger kommt deshalb zuerst. Wenn du mehr fürs Bein machen willst, frag deinen Physio nach Beinpresse oder Hip Thrust.</p></div>
+  <div class="card tipblock"><h3>Knie</h3>
+    <p>${S.kneePause?"<b>Beintraining ist pausiert.</b> Mittwoch gibt es stattdessen extra Bizeps (Schrägbank-Curls) und extra Seitheben am Kabel.":"<b>Beintraining ist aktiv.</b> Mittwoch: Beinbeuger, Beinstrecker, Waden."}</p>
+    <p>Wenn das Knie bei Bankdrücken stört: Füße flach auf den Boden und weniger Beinantrieb. Hält der Schmerz an, lass es ärztlich oder beim Physio anschauen.</p>
+    <button class="btn ghost" type="button" id="kneeToggle">${S.kneePause?"Beine wieder einplanen":"Beine pausieren"}</button></div>
   <div class="card tipblock"><h3>Rest des Körpers</h3><ul>
     <li>Seitheben 2× pro Woche (Mo, Fr) bringt mehr als 1× schwer.</li>
     <li>Bizeps an den Brusttagen (Mo, Fr), Trizeps an den Rückentagen (Di, Sa). Merkst du am Montag, dass der Trizeps vom Samstag noch müde ist, mach ihn samstags einen Satz weniger.</li>
@@ -756,6 +764,7 @@ document.getElementById("view").addEventListener("click",e=>{
     if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done).catch(()=>{ta.select();document.getElementById("bkMsg").textContent="Text markiert. Tippe auf Kopieren.";}); } else { ta.select(); }
     return; }
   if(b.id==="bkLoad"){ try{ const d=JSON.parse(document.getElementById("bk").value); if(d&&d.v===1){ S=Object.assign(DEFAULT(),d); save(); render(); document.getElementById("bkMsg").textContent="Backup geladen."; } else throw 0; }catch(e){ document.getElementById("bkMsg").textContent="Das ist kein gültiges Backup. Kopiere den ganzen Text."; } return; }
+  if(b.id==="kneeToggle"){ S.kneePause=!S.kneePause; save(); render(); return; }
   if(b.id==="finish"){ finish(); return; }
   if(b.id==="ormSave"){ const v=num(document.getElementById("orm").value); if(v){S.oneRM=v; newBlockWeights(); save(); render();} return; }
 });
