@@ -222,7 +222,7 @@ input.txt{width:100%;border:1px solid var(--line);background:var(--sunk);border-
     </div>
   </header>
   <main id="view"></main>
-  <p class="sync" id="sync"></p>
+  <p class="sync"><span id="sync"></span> · v4</p>
 </div>
 <div class="sheet" id="sheet" hidden></div>
 <div class="dock">
@@ -851,7 +851,12 @@ sheet.addEventListener("input",e=>{if(e.target.id==="psearch"){picker.q=e.target
   const l=lsGet(); if(l&&l.v===1) S=Object.assign(DEFAULT(),l);
   render();
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
-  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+  if("serviceWorker" in navigator){
+    let reloaded=false; const hadController=!!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController&&!reloaded){ reloaded=true; location.reload(); } });
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{ try{r.update()}catch(e){} }).catch(()=>{});
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{}); });
+  }
   let last=todayIso(); setInterval(()=>{const n=todayIso();if(n!==last){last=n;if(tab==="today")render()}},60000);
 })();
 </script>

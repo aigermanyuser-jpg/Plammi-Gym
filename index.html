@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync" id="sync">Gespeichert auf diesem iPhone</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 4 (21.10.)</p>
 </div>
 
 <div class="dock">
@@ -780,7 +780,12 @@ document.getElementById("view").addEventListener("change",e=>{
   const local=lsGet(); if(local&&local.v===1) S=Object.assign(DEFAULT(),local);
   render();
   try{ navigator.storage && navigator.storage.persist && navigator.storage.persist(); }catch(e){}
-  if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(()=>{}); }
+  if("serviceWorker" in navigator){
+    let reloaded=false; const hadController=!!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController&&!reloaded){ reloaded=true; location.reload(); } });
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>{ try{r.update()}catch(e){} }).catch(()=>{});
+    document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{}); });
+  }
   setInterval(()=>{ const ds=todayIso(); if(ds!==window.__d){ window.__d=ds; if(tab==="heute") render(); } },60000);
   window.__d=todayIso();
 })();
