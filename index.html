@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 4 (21.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 5 (21.10.)</p>
 </div>
 
 <div class="dock">
@@ -227,7 +227,7 @@ const EX = {
   smith_press:{g:"fd",n:"Schulterpresse Smith Machine",inc:2.5,cue:"Stange vor dem Gesicht, Ellbogen leicht nach vorne. Gewicht beim ersten Mal eintragen."},
   lateral:{g:"sd",n:"Seitheben Kurzhanteln",inc:1,unit:"kg je Hand",cue:"Ellbogen führen, kein Schwung. Leicht nach vorne gelehnt."},
   preacher:{g:"bi",n:"Preacher Curl Maschine",inc:2.5,cue:"Unten volle Streckung, langsam ablassen."},
-  incline_curl:{g:"bi",n:"Schrägbank-Curls Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Bank auf ca. 45°, Arme hängen hinter dem Körper. Maximale Dehnung, gut für den langen Bizepskopf."},
+  incline_curl:{g:"bi",n:"Bizeps-Curl Kabel einarmig, stehend",inc:2.5,side:true,cue:"Pro Seite. Kabel kommt von hinten, Arm leicht hinter dem Körper: gleiche Dehnung wie an der Schrägbank. Ellbogen bleibt ruhig."},
   lat_cable:{g:"sd",n:"Seitheben am Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel kommt von unten hinter dem Körper, so ist die Spannung auch unten da."},
   hammer:{g:"bi",n:"Hammer Curl Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Daumen oben, Ellbogen fest am Körper. Trifft auch den Brachialis, macht den Arm dicker."},
   cable_curl:{g:"bi",n:"Bizeps-Curl Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel hinter dem Körper für mehr Dehnung."},
@@ -694,7 +694,7 @@ function viewTips(){
     <li>Griff etwas breiter als schulterbreit, Ellbogen 45–70° vom Körper.</li>
     <li>Schwere Sätze nur mit Spotter oder Safety-Pins.</li></ul></div>
   <div class="card tipblock"><h3>Knie</h3>
-    <p>${S.kneePause?"<b>Beintraining ist pausiert.</b> Mittwoch gibt es stattdessen extra Bizeps (Schrägbank-Curls) und extra Seitheben am Kabel.":"<b>Beintraining ist aktiv.</b> Mittwoch: Beinbeuger, Beinstrecker, Waden."}</p>
+    <p>${S.kneePause?"<b>Beintraining ist pausiert.</b> Mittwoch gibt es stattdessen extra Bizeps (Kabel-Curls einarmig, stehend) und extra Seitheben am Kabel.":"<b>Beintraining ist aktiv.</b> Mittwoch: Beinbeuger, Beinstrecker, Waden."}</p>
     <p>Wenn das Knie bei Bankdrücken stört: Füße flach auf den Boden und weniger Beinantrieb. Hält der Schmerz an, lass es ärztlich oder beim Physio anschauen.</p>
     <button class="btn ghost" type="button" id="kneeToggle">${S.kneePause?"Beine wieder einplanen":"Beine pausieren"}</button></div>
   <div class="card tipblock"><h3>Rest des Körpers</h3><ul>
