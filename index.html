@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 6 (21.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 7 (25.10.)</p>
 </div>
 
 <div class="dock">
@@ -314,7 +314,10 @@ function setSync(t){document.getElementById("sync").textContent=t}
 const pad = n=>String(n).padStart(2,"0");
 const iso = d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 const parse = s=>{const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)};
-const todayIso = ()=>iso(new Date());
+// Ein Trainingstag endet erst um 4 Uhr nachts (Training nach Mitternacht zählt noch zum Vortag)
+const todayIso = ()=>iso(new Date(Date.now()-4*3600e3));
+// Nachgeholtes Training aus dem Kalender: gilt bis "Zurück zu heute" oder 12 Stunden
+function curDate(){ const a=S.active; if(a&&a.date&&Date.now()-a.at<12*3600e3) return a.date; return todayIso(); }
 function weekInfo(ds){
   const days = Math.floor((parse(ds)-parse(BLOCK_START))/864e5);
   const w = Math.floor(days/7);
@@ -394,7 +397,7 @@ function getSession(ds, create){
 function setKey(p,j){return p.k+"|"+p.i+"|"+j}
 
 function viewToday(){
-  const ds = todayIso();
+  const ds = curDate(); const catchUp = ds!==todayIso();
   const {block,week} = weekInfo(ds);
   const wd = parse(ds).getDay();
   let sess = getSession(ds,false);
@@ -419,7 +422,7 @@ function viewToday(){
   else if(week===8) flags.push(`<span class="pill warn">Leichte Woche</span>`);
   if(sess.ready==="low") flags.push(`<span class="pill warn">Angepasst: −10 %, 1 Satz weniger</span>`);
 
-  let html = `<section class="hero"><div class="eyebrow">${fmtDate(ds)}</div>
+  let html = `<section class="hero">${catchUp?`<div class="card" style="padding:12px;gap:8px;border-color:var(--warn)"><div class="eyebrow" style="color:var(--warn)">${ds<todayIso()?"Nachholen":"Vorziehen"}: ${fmtDate(ds)}</div><button type="button" class="btn ghost small" data-backtoday="1" style="padding:10px">Zurück zu heute</button></div>`:""}<div class="eyebrow">${fmtDate(ds)}</div>
     <h1>${def.t}</h1><div class="sub">${def.s}</div>
     <div class="meta"><span class="pill num">ca. ${mins} Min</span><span class="pill num">${total} Arbeitssätze</span>${flags.join("")}</div>
     <div><div class="eyebrow" style="margin-bottom:6px">Wie fühlst du dich?</div>
@@ -501,7 +504,7 @@ const num = v=>{ if(v===""||v==null) return null; const n=parseFloat(String(v).r
 
 /* ---------- Abschluss + Progression ---------- */
 function finish(){
-  const ds = todayIso(); const sess = getSession(ds,false); if(!sess) return;
+  const ds = curDate(); const sess = getSession(ds,false); if(!sess) return;
   const plan = buildPlan(sess.day, ds, sess.ready);
   const res = []; const adjusted = sess.ready==="low" || plan.some(p=>p.deload);
   const seen = new Set();
@@ -554,6 +557,7 @@ function newBlockWeights(){
   ["bench_double","bench_heavy","bench_volume","bench_pause"].forEach(k=>{S.weights[k]=roundTo(S.oneRM*EX[k].pct,2.5);S.fails[k]=0;});
 }
 
+const b0=(e,k)=>{const b=e.target.closest("button"); return b&&b.dataset[k]!=null;};
 /* ---------- Kalender ---------- */
 let calMonth = null, calSel = null;
 const TAGS = {1:["c","bi"],2:["b"],get 3(){return S.kneePause?["c","bi"]:["c","bi","l"]},5:["c","bi"],6:["b"]};
@@ -591,7 +595,7 @@ function viewCalendar(){
       <div class="meta"><span class="pill num">ca. ${estMinutes(plan)} Min</span>${flag}${sSess&&sSess.done?`<span class="pill good">Erledigt</span>`:""}</div>
       <ul class="plan">${plan.map(p=>`<li class="num"><span>${p.e.n}</span><span>${p.sets} × ${p.reps}${p.w!=null?" · "+kg(p.w)+" kg":""}</span></li>`).join("")}</ul>
       ${sSess&&sSess.done&&sSess.result?`<div class="eyebrow">Ergebnis</div><ul class="result">${sSess.result.map(r=>`<li>${r}</li>`).join("")}</ul>`:""}
-      ${calSel===ds?`<button type="button" class="btn primary" data-go="heute">Zum heutigen Training</button>`:""}
+      ${calSel===ds?`<button type="button" class="btn primary" data-backtoday="1">Zum heutigen Training</button>`:`<button type="button" class="btn ${sSess&&sSess.done?"ghost":"primary"}" data-start="${calSel}">${sSess&&sSess.done?"Training öffnen":(calSel<ds?"Training jetzt nachholen":"Training jetzt machen")}</button>`}
       ${calSel>ds?`<p class="hint">Gewichte sind der aktuelle Stand und passen sich nach jedem Training an.</p>`:""}</div>`;
   }
   return `<section class="hero"><div class="eyebrow">${splitTxt()}</div><h1>Kalender</h1></section>
@@ -741,7 +745,9 @@ function render(){
 document.querySelector(".tabs").addEventListener("click",e=>{const b=e.target.closest("button[data-tab]"); if(!b) return; tab=b.dataset.tab; render(); window.scrollTo(0,0);});
 document.getElementById("view").addEventListener("click",e=>{
   unlockAudio();
-  const ds=todayIso();
+  const ds=curDate();
+  if(b0(e,"start")){ const xs=e.target.closest("button").dataset.start; S.active={date:xs,at:Date.now()}; getSession(xs,true); save(); tab="heute"; render(); window.scrollTo(0,0); return; }
+  if(b0(e,"backtoday")){ S.active=null; save(); render(); window.scrollTo(0,0); return; }
   const b=e.target.closest("button"); if(!b) return;
   if(b.dataset.cal){ calSel=b.dataset.cal; render(); return; }
   if(b.dataset.calnav){ let [y,m]=calMonth; m+=Number(b.dataset.calnav); if(m<0){m=11;y--} if(m>11){m=0;y++} calMonth=[y,m]; render(); return; }
@@ -769,7 +775,7 @@ document.getElementById("view").addEventListener("click",e=>{
   if(b.id==="ormSave"){ const v=num(document.getElementById("orm").value); if(v){S.oneRM=v; newBlockWeights(); save(); render();} return; }
 });
 document.getElementById("view").addEventListener("change",e=>{
-  const t=e.target; const ds=todayIso();
+  const t=e.target; const ds=curDate();
   if(t.dataset.w||t.dataset.r){ const s=getSession(ds,true); const k=t.dataset.w||t.dataset.r; const st=s.sets[k]||{};
     if(t.dataset.w) st.w=num(t.value); else st.r=num(t.value); s.sets[k]=st; save(); }
   if(t.dataset.wk){ S.weights[t.dataset.wk]=num(t.value); save(); }
