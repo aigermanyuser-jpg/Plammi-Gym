@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 12 (26.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 13 (26.10.)</p>
 </div>
 
 <div class="dock">
@@ -383,7 +383,7 @@ function buildPlan(day, ds, ready){
       let prev = 0;
       warm = ladder.map(([p,r])=>{ const v = p===0?20:warmRound(top*p, top, prev); prev=v; return {w:v,r}; })
         .filter((x,j,a)=>j===0||x.w>a[j-1].w);
-    } else if(x.w1 && w){
+    } else if(x.w1 && w && i===0){ // nur die erste Übung des Tages bekommt einen Aufwärmsatz
       warm = [{w:e.bar ? warmRound(w*0.6, w, 0) : roundTo(w*0.6,step),r:8}];
     }
     if(x.test) w = null;
