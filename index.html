@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 8 (26.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 9 (26.10.)</p>
 </div>
 
 <div class="dock">
@@ -253,8 +253,8 @@ const GROUPS = {c:{n:"Brust",c:"c"},bi:{n:"Bizeps",c:"bi"},sd:{n:"Seitliche Schu
 const DAYS = {
   1:{t:"Brust schwer",s:"Bizeps · Schultern",items:[
     {k:"bench_double",sets:1,reps:2,rest:240,opt:true},
-    {k:"bench_heavy",sets:4,reps:3,rest:180},
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
+    {k:"bench_heavy",sets:4,reps:3,rest:180},
     {k:"incline_db",sets:3,lo:6,hi:8,rest:150,w1:true},
     {k:"preacher",sets:3,lo:8,hi:12,rest:90},
     {k:"cable_curl",sets:2,lo:10,hi:12,rest:60},
@@ -283,8 +283,8 @@ const DAYS = {
     {k:"calf",sets:4,lo:10,hi:15,rest:60,knee:true}]},
   4:null,
   5:{t:"Brust Pause",s:"Bizeps · Seitheben",items:[
-    {k:"bench_five2",sets:3,lo:3,hi:5,rest:180},
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
+    {k:"bench_five2",sets:3,lo:3,hi:5,rest:180},
     {k:"bench_pause",sets:4,reps:4,rest:180},
     {k:"incline_m",sets:3,lo:6,hi:8,rest:150,w1:true},
     {k:"fly",sets:2,lo:12,hi:15,rest:60},
@@ -364,7 +364,11 @@ function buildPlan(day, ds, ready){
     let warm = [];
     if(e.bar && firstBar){
       firstBar = false;
-      const top = x.test ? S.oneRM : (w||60);
+      let top = x.test ? S.oneRM : (w||60);
+      if(x.k==="hold"){ // Aufwärmen am Bankdrückgewicht orientieren, nicht am Hold-Gewicht
+        const nx = items.slice(i+1).find(y=>EX[y.k].bar && y.k!=="hold");
+        if(nx){ const ne=EX[nx.k]; top = S.weights[nx.k] ?? (ne.pct?roundTo(S.oneRM*ne.pct,2.5):60); }
+      }
       const ladder = x.test ? [[0,10],[.5,5],[.7,3],[.8,2],[.9,1]] :
         (x.k==="bench_double"||x.k==="bench_heavy") ? [[0,10],[.5,5],[.7,3],[.85,1]] : [[0,10],[.5,5],[.7,3],[.85,1]];
       warm = ladder.map(([p,r])=>({w:p===0?20:Math.max(20,roundTo(top*p,2.5)),r}));
