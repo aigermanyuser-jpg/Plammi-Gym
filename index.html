@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 7 (25.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 8 (26.10.)</p>
 </div>
 
 <div class="dock">
@@ -216,8 +216,11 @@ body{margin:0;overscroll-behavior-y:none}
 const BLOCK_START = "2026-10-19"; // Montag, Woche 1 von Block 1
 const EX = {
   bench_double:{g:"c",n:"Bankdrücken · schwerer Double",bar:true,inc:2.5,pct:.93,cue:"Nur wenn du dich fit fühlst. Schulterblätter fest, Füße in den Boden, kontrolliert auf die untere Brust."},
-  bench_heavy:{g:"c",n:"Bankdrücken",bar:true,inc:2.5,pct:.84,cue:"Explosiv hoch, 1–2 Wiederholungen im Tank lassen."},
+  bench_heavy:{g:"c",n:"Bankdrücken schwer (3er)",bar:true,inc:2.5,pct:.84,cue:"Explosiv hoch, 1–2 Wiederholungen im Tank lassen."},
   bench_volume:{g:"c",n:"Bankdrücken",bar:true,inc:2.5,pct:.69,cue:"Erst 4×8 schaffen, dann +2,5 kg. Saubere, gleiche Bahn bei jeder Wiederholung."},
+  bench_five:{g:"c",n:"Bankdrücken schwer (3–5er)",bar:true,inc:2.5,pct:.83,cue:"Richtig schwer: 3–5 Wiederholungen, nur 1–2 im Tank. Schaffst du in allen 3 Sätzen 5, gibt es nächstes Mal +2,5 kg."},
+  bench_five2:{g:"c",n:"Bankdrücken schwer (3–5er)",bar:true,inc:2.5,pct:.83,cue:"Richtig schwer: 3–5 Wiederholungen, nur 1–2 im Tank. Eigene Steigerung, getrennt vom Mittwoch."},
+  hold:{g:"c",n:"Static Hold (125 %)",bar:true,inc:2.5,pct:1.25,repUnit:"Sek",cue:"NUR im Rack mit Safety-Pins knapp unter den gestreckten Armen oder mit Spotter. Ausheben, Arme gestreckt, Schulterblätter fest, halten. Nicht absenken."},
   bench_pause:{g:"c",n:"Pausen-Bankdrücken",bar:true,inc:2.5,pct:.75,cue:"1 Sekunde komplett ruhig auf der Brust, Spannung halten, dann drücken."},
   bench_test:{g:"c",n:"Maximaltest Bankdrücken",bar:true,inc:2.5,cue:"Nach dem Aufwärmen bis zu 3 Versuche. Trag dein bestes geschafftes Gewicht ein. Nur mit Spotter oder Safety-Pins."},
   incline_db:{g:"c",n:"Schrägbank Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Bank auf ca. 30°. Tief runter, oben nicht ganz durchstrecken."},
@@ -251,6 +254,7 @@ const DAYS = {
   1:{t:"Brust schwer",s:"Bizeps · Schultern",items:[
     {k:"bench_double",sets:1,reps:2,rest:240,opt:true},
     {k:"bench_heavy",sets:4,reps:3,rest:180},
+    {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"incline_db",sets:3,lo:6,hi:8,rest:150,w1:true},
     {k:"preacher",sets:3,lo:8,hi:12,rest:90},
     {k:"cable_curl",sets:2,lo:10,hi:12,rest:60},
@@ -266,6 +270,7 @@ const DAYS = {
     {k:"pushdown",sets:2,lo:10,hi:15,rest:60},
     {k:"revfly",sets:3,lo:12,hi:20,rest:60}]},
   3:{t:"Brust Volumen",get s(){return S.kneePause?"Bizeps · Schultern":"Bizeps · Seitheben · Beine"},items:[
+    {k:"bench_five",sets:3,lo:3,hi:5,rest:180},
     {k:"bench_volume",sets:4,lo:6,hi:8,rest:150},
     {k:"chest_press",sets:3,lo:8,hi:12,rest:120},
     {k:"fly",sets:3,lo:12,hi:15,rest:60},
@@ -278,6 +283,8 @@ const DAYS = {
     {k:"calf",sets:4,lo:10,hi:15,rest:60,knee:true}]},
   4:null,
   5:{t:"Brust Pause",s:"Bizeps · Seitheben",items:[
+    {k:"bench_five2",sets:3,lo:3,hi:5,rest:180},
+    {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"bench_pause",sets:4,reps:4,rest:180},
     {k:"incline_m",sets:3,lo:6,hi:8,rest:150,w1:true},
     {k:"fly",sets:2,lo:12,hi:15,rest:60},
@@ -344,6 +351,7 @@ function buildPlan(day, ds, ready){
   return items.map((x,i)=>{
     const e = EX[x.k];
     let w = S.weights[x.k];
+    if(w==null && e.pct && !x.test) w = roundTo(S.oneRM*e.pct,2.5);
     if(x.test) w = S.oneRM;
     let sets = x.sets;
     const step = e.inc===1?1:(e.inc===2?2:2.5);
@@ -358,7 +366,7 @@ function buildPlan(day, ds, ready){
       firstBar = false;
       const top = x.test ? S.oneRM : (w||60);
       const ladder = x.test ? [[0,10],[.5,5],[.7,3],[.8,2],[.9,1]] :
-        (x.k==="bench_double"||x.k==="bench_heavy") ? [[0,10],[.5,5],[.7,3],[.85,1]] : [[0,10],[.55,5],[.75,3]];
+        (x.k==="bench_double"||x.k==="bench_heavy") ? [[0,10],[.5,5],[.7,3],[.85,1]] : [[0,10],[.5,5],[.7,3],[.85,1]];
       warm = ladder.map(([p,r])=>({w:p===0?20:Math.max(20,roundTo(top*p,2.5)),r}));
     } else if(x.w1 && w){
       warm = [{w:roundTo(w*0.6,step),r:8}];
@@ -450,8 +458,8 @@ function viewToday(){
     html += `<article class="ex"><div class="exhead"><div class="idx num">${n+1}</div><div>
       <div class="grp"><i class="tag ${grp.c}"></i>${grp.n}</div>
       <h3>${p.e.n}</h3>
-      <div class="target num"><b>${p.sets} × ${p.reps}</b>${p.e.side?" je Seite":""} · ${wTxt} · Pause ${mmss(p.rest)}${p.e.alt?` · Alternative: ${p.e.alt}`:""}</div>
-      ${p.test?"":`<div class="meta" style="margin-top:6px"><span class="pill rule">${p.reps.includes("–")?"Gewicht fix · Wdh steigern":"Wdh fix · Gewicht steigern"}</span></div>`}
+      <div class="target num"><b>${p.sets} × ${p.reps}${p.e.repUnit?" "+p.e.repUnit:""}</b>${p.e.side?" je Seite":""} · ${wTxt} · Pause ${mmss(p.rest)}${p.e.alt?` · Alternative: ${p.e.alt}`:""}</div>
+      ${p.test?"":`<div class="meta" style="margin-top:6px"><span class="pill rule">${p.reps.includes("–")?(p.e.repUnit?"Gewicht fix · Sekunden steigern":"Gewicht fix · Wdh steigern"):"Wdh fix · Gewicht steigern"}</span></div>`}
       ${p.e.bar && p.w ? plateHTML(p.w):""}
       <div class="cue">${p.e.cue}</div></div></div><div class="sets">`;
     }
@@ -473,7 +481,7 @@ function viewToday(){
       const defW = lockW ? p.w : (st.w ?? (p.w ?? ""));
       html += `<div class="set ${st.done?"done":""}"><span class="lab">${p.test?"Versuch":"Satz"} ${j+1}${tgt!=null?`<small class="num">Ziel ${tgt}</small>`:""}</span>
         <div class="field ${lockW?"locked":""}"><input id="w-${k}" inputmode="decimal" data-w="${k}" value="${defW===""?"":kg(defW)}" placeholder="${p.w==null&&!p.test?"Start":"kg"}" aria-label="Gewicht" ${lockW?"readonly":""}><span>${lockW?LOCK:"kg"}</span></div>
-        <div class="field"><input id="r-${k}" inputmode="numeric" data-r="${k}" value="${defR}" placeholder="${p.test?"0/1":"Wdh"}" aria-label="Wiederholungen"><span>Wdh</span></div>
+        <div class="field"><input id="r-${k}" inputmode="numeric" data-r="${k}" value="${defR}" placeholder="${p.test?"0/1":"Wdh"}" aria-label="Wiederholungen"><span>${p.e.repUnit||"Wdh"}</span></div>
         <button type="button" class="chk" data-set="${k}" data-rest="${p.rest}" data-name="${p.e.n}" aria-pressed="${!!st.done}" aria-label="Satz erledigt">${CHECK}</button></div>`;
     }
     if(lockW && !exDone) html += `<button type="button" class="linkbtn" data-unlock="${p.k}">Gewicht heute ändern (z. B. Gerät belegt)</button>`;
@@ -533,7 +541,7 @@ function finish(){
     if(p.reps.includes("–")){
       if(allDone && logged.every(x=>x.r!=null && x.r>=p.hi)){ S.weights[p.k]=base+p.e.inc; f=0; msg=`<span class="up">+${kg(p.e.inc)} kg → ${kg(S.weights[p.k])} kg</span>`; }
       else if(logged.some(x=>x.r!=null && x.r<p.lo)){ f++; if(f>=2){S.weights[p.k]=Math.max(0,base-p.e.inc);f=0;msg=`<span class="down">−${kg(p.e.inc)} kg → ${kg(S.weights[p.k])} kg</span>`;} else msg=`bleibt bei ${kg(base)} kg, Wiederholungen steigern`; }
-      else { msg=`bleibt bei ${kg(base)} kg, Ziel: alle Sätze ${p.hi} Wdh`; }
+      else { msg=`bleibt bei ${kg(base)} kg, Ziel: alle Sätze ${p.hi} ${p.e.repUnit||"Wdh"}`; }
     } else {
       const target = Number(p.reps);
       if(allDone && logged.every(x=>x.r!=null && x.r>=target)){ S.weights[p.k]=base+p.e.inc; f=0; msg=`<span class="up">+${kg(p.e.inc)} kg → ${kg(S.weights[p.k])} kg</span>`; }
@@ -554,7 +562,7 @@ function finish(){
   save(); render(); window.scrollTo({top:0,behavior:"smooth"});
 }
 function newBlockWeights(){
-  ["bench_double","bench_heavy","bench_volume","bench_pause"].forEach(k=>{S.weights[k]=roundTo(S.oneRM*EX[k].pct,2.5);S.fails[k]=0;});
+  ["bench_double","bench_heavy","bench_five","bench_five2","bench_volume","bench_pause","hold"].forEach(k=>{S.weights[k]=roundTo(S.oneRM*EX[k].pct,2.5);S.fails[k]=0;});
 }
 
 const b0=(e,k)=>{const b=e.target.closest("button"); return b&&b.dataset[k]!=null;};
