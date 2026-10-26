@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 11 (26.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 12 (26.10.)</p>
 </div>
 
 <div class="dock">
@@ -336,7 +336,7 @@ const kg = w=> (w==null||w==="")?"–":String(Math.round(w*100)/100).replace("."
 const mmss = s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+":"+pad(s%60)};
 const roundTo = (w,step)=>Math.round(w/step)*step;
 
-/* Aufwärmgewichte: am liebsten auf 0 endend, sonst auf 5; immer unter dem Arbeitsgewicht */
+/* Aufwärmgewichte Langhantel: am liebsten auf 0 endend, sonst auf 5; immer unter dem Arbeitsgewicht */
 function warmRound(x, top, prev){
   for(const step of [10,5]){
     for(const c of [Math.round(x/step)*step, Math.floor(x/step)*step]){
@@ -384,7 +384,7 @@ function buildPlan(day, ds, ready){
       warm = ladder.map(([p,r])=>{ const v = p===0?20:warmRound(top*p, top, prev); prev=v; return {w:v,r}; })
         .filter((x,j,a)=>j===0||x.w>a[j-1].w);
     } else if(x.w1 && w){
-      warm = [{w:warmRound(w*0.6, w, 0),r:8}];
+      warm = [{w:e.bar ? warmRound(w*0.6, w, 0) : roundTo(w*0.6,step),r:8}];
     }
     if(x.test) w = null;
     const reps = x.reps!=null ? String(x.reps) : x.lo+"–"+x.hi;
