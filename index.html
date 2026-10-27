@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 14 (27.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 15 (27.10.)</p>
 </div>
 
 <div class="dock">
@@ -215,6 +215,9 @@ body{margin:0;overscroll-behavior-y:none}
 /* ---------- Programm ---------- */
 const BLOCK_START = "2026-10-19"; // Montag, Woche 1 von Block 1
 const EX = {
+  single_mo:{g:"c",n:"Bankdrücken Single (sehr schwer)",bar:true,inc:2.5,pct:.96,cue:"Sehr schwer, aber technisch sauber: 1 Wiederholung, ca. 1 im Tank. Nur mit Spotter oder Safety-Pins. Klappen beide Singles sauber → nächstes Mal +2,5 kg."},
+  single_mi:{g:"c",n:"Bankdrücken Single (sehr schwer)",bar:true,inc:2.5,pct:.96,cue:"Sehr schwer, aber technisch sauber: 1 Wiederholung, ca. 1 im Tank. Nur mit Spotter oder Safety-Pins. Klappen beide Singles sauber → nächstes Mal +2,5 kg."},
+  single_fr:{g:"c",n:"Bankdrücken Single (sehr schwer)",bar:true,inc:2.5,pct:.96,cue:"Sehr schwer, aber technisch sauber: 1 Wiederholung, ca. 1 im Tank. Nur mit Spotter oder Safety-Pins. Klappen beide Singles sauber → nächstes Mal +2,5 kg."},
   bench_double:{g:"c",n:"Bankdrücken · schwerer Double",bar:true,inc:2.5,pct:.93,cue:"Nur wenn du dich fit fühlst. Schulterblätter fest, Füße in den Boden, kontrolliert auf die untere Brust."},
   bench_heavy:{g:"c",n:"Bankdrücken schwer (3er)",bar:true,inc:2.5,pct:.84,cue:"Explosiv hoch, 1–2 Wiederholungen im Tank lassen."},
   bench_volume:{g:"c",n:"Bankdrücken",bar:true,inc:2.5,pct:.69,cue:"Erst 4×8 schaffen, dann +2,5 kg. Saubere, gleiche Bahn bei jeder Wiederholung."},
@@ -254,7 +257,7 @@ const GROUPS = {c:{n:"Brust",c:"c"},bi:{n:"Bizeps",c:"bi"},sd:{n:"Seitliche Schu
   ba:{n:"Rücken",c:"b"},tr:{n:"Trizeps",c:"tr"},rd:{n:"Hintere Schulter",c:"sd"},le:{n:"Beine",c:"l"}};
 const DAYS = {
   1:{t:"Brust schwer",s:"Bizeps · Schultern",items:[
-    {k:"bench_double",sets:1,reps:2,rest:240,opt:true},
+    {k:"single_mo",sets:2,reps:1,rest:240,opt:true},
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"bench_heavy",sets:4,reps:3,rest:180},
     {k:"incline_db",sets:2,lo:6,hi:8,rest:150,w1:true},
@@ -274,6 +277,7 @@ const DAYS = {
     {k:"pushdown",sets:2,lo:10,hi:15,rest:60},
     {k:"revfly",sets:3,lo:12,hi:20,rest:60}]},
   3:{t:"Brust Volumen",get s(){return S.kneePause?"Bizeps · Schultern":"Bizeps · Seitheben · Beine"},items:[
+    {k:"single_mi",sets:2,reps:1,rest:240,opt:true},
     {k:"bench_five",sets:3,lo:3,hi:5,rest:180},
     {k:"bench_volume",sets:3,lo:6,hi:8,rest:150},
     {k:"chest_press",sets:3,lo:8,hi:12,rest:120},
@@ -287,6 +291,7 @@ const DAYS = {
     {k:"calf",sets:4,lo:10,hi:15,rest:60,knee:true}]},
   4:null,
   5:{t:"Brust Pause",s:"Bizeps · Seitheben",items:[
+    {k:"single_fr",sets:2,reps:1,rest:240,opt:true},
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"bench_five2",sets:3,lo:3,hi:5,rest:180},
     {k:"bench_pause",sets:3,reps:4,rest:180},
@@ -384,7 +389,7 @@ function buildPlan(day, ds, ready){
         if(nx){ const ne=EX[nx.k]; top = S.weights[nx.k] ?? (ne.pct?roundTo(S.oneRM*ne.pct,2.5):60); }
       }
       const ladder = x.test ? [[0,10],[.5,5],[.7,3],[.8,2],[.9,1]] :
-        (x.k==="bench_double"||x.k==="bench_heavy") ? [[0,10],[.5,5],[.7,3],[.85,1]] : [[0,10],[.5,5],[.7,3],[.85,1]];
+        (x.k==="bench_double"||x.k==="bench_heavy"||x.k.startsWith("single")) ? [[0,10],[.5,5],[.7,3],[.85,1]] : [[0,10],[.5,5],[.7,3],[.85,1]];
       let prev = 0;
       warm = ladder.map(([p,r])=>{ const v = p===0?20:warmRound(top*p, top, prev); prev=v; return {w:v,r}; })
         .filter((x,j,a)=>j===0||x.w>a[j-1].w);
@@ -582,7 +587,7 @@ function finish(){
   save(); render(); window.scrollTo({top:0,behavior:"smooth"});
 }
 function newBlockWeights(){
-  ["bench_double","bench_heavy","bench_five","bench_five2","bench_volume","bench_pause","hold"].forEach(k=>{S.weights[k]=roundTo(S.oneRM*EX[k].pct,2.5);S.fails[k]=0;});
+  ["single_mo","single_mi","single_fr","bench_double","bench_heavy","bench_five","bench_five2","bench_volume","bench_pause","hold"].forEach(k=>{S.weights[k]=roundTo(S.oneRM*EX[k].pct,2.5);S.fails[k]=0;});
 }
 
 const b0=(e,k)=>{const b=e.target.closest("button"); return b&&b.dataset[k]!=null;};
