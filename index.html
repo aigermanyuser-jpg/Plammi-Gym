@@ -194,7 +194,7 @@ body{margin:0;overscroll-behavior-y:none}
     <div class="wk num" id="wk"></div>
   </header>
   <main id="view"></main>
-  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 13 (26.10.)</p>
+  <p class="sync"><span id="sync">Gespeichert auf diesem iPhone</span> · Version 14 (27.10.)</p>
 </div>
 
 <div class="dock">
@@ -232,6 +232,8 @@ const EX = {
   preacher:{g:"bi",n:"Preacher Curl Maschine",inc:2.5,cue:"Unten volle Streckung, langsam ablassen."},
   incline_curl:{g:"bi",n:"Bizeps-Curl Kabel einarmig, stehend",inc:2.5,side:true,cue:"Pro Seite. Kabel kommt von hinten, Arm leicht hinter dem Körper: gleiche Dehnung wie an der Schrägbank. Ellbogen bleibt ruhig."},
   lat_cable:{g:"sd",n:"Seitheben am Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel kommt von unten hinter dem Körper, so ist die Spannung auch unten da."},
+  fly_heavy:{g:"c",n:"Flys schwer (Kabel oder Butterfly)",inc:2.5,cue:"Schwer, aber kontrolliert: tief in die Dehnung, kurz halten, dann zusammendrücken. Bis kurz vors Versagen. Nicht mit Kurzhanteln."},
+  hammer_heavy:{g:"bi",n:"Hammer Curls schwer",inc:2,unit:"kg je Hand",cue:"Schweres Gewicht, sauber: Ellbogen am Körper, kein Schwung aus dem Rücken. Bis kurz vors Versagen."},
   hammer:{g:"bi",n:"Hammer Curl Kurzhanteln",inc:2,unit:"kg je Hand",cue:"Daumen oben, Ellbogen fest am Körper. Trifft auch den Brachialis, macht den Arm dicker."},
   cable_curl:{g:"bi",n:"Bizeps-Curl Kabel einarmig",inc:2.5,side:true,cue:"Pro Seite. Kabel hinter dem Körper für mehr Dehnung."},
   latpull:{g:"ba",n:"Latzug breit",inc:2.5,cue:"Brust raus, Ellbogen Richtung Hüfte ziehen."},
@@ -255,8 +257,10 @@ const DAYS = {
     {k:"bench_double",sets:1,reps:2,rest:240,opt:true},
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"bench_heavy",sets:4,reps:3,rest:180},
-    {k:"incline_db",sets:3,lo:6,hi:8,rest:150,w1:true},
+    {k:"incline_db",sets:2,lo:6,hi:8,rest:150,w1:true},
     {k:"smith_press",sets:2,lo:6,hi:10,rest:120,w1:true},
+    {k:"fly_heavy",sets:2,lo:8,hi:12,rest:90},
+    {k:"hammer_heavy",sets:2,lo:6,hi:10,rest:90},
     {k:"preacher",sets:3,lo:8,hi:12,rest:90},
     {k:"cable_curl",sets:2,lo:10,hi:12,rest:60},
     {k:"lateral",sets:3,lo:12,hi:15,rest:60}]},
@@ -271,9 +275,9 @@ const DAYS = {
     {k:"revfly",sets:3,lo:12,hi:20,rest:60}]},
   3:{t:"Brust Volumen",get s(){return S.kneePause?"Bizeps · Schultern":"Bizeps · Seitheben · Beine"},items:[
     {k:"bench_five",sets:3,lo:3,hi:5,rest:180},
-    {k:"bench_volume",sets:4,lo:6,hi:8,rest:150},
+    {k:"bench_volume",sets:3,lo:6,hi:8,rest:150},
     {k:"chest_press",sets:3,lo:8,hi:12,rest:120},
-    {k:"fly",sets:3,lo:12,hi:15,rest:60},
+    {k:"fly_heavy",sets:2,lo:8,hi:12,rest:90},
     {k:"incline_curl",sets:3,lo:8,hi:12,rest:90,kneeOnly:true},
     {k:"hammer",sets:2,lo:10,hi:12,rest:60},
     {k:"lateral",sets:3,lo:12,hi:15,rest:60},
@@ -285,9 +289,10 @@ const DAYS = {
   5:{t:"Brust Pause",s:"Bizeps · Seitheben",items:[
     {k:"hold",sets:3,lo:10,hi:15,rest:180},
     {k:"bench_five2",sets:3,lo:3,hi:5,rest:180},
-    {k:"bench_pause",sets:4,reps:4,rest:180},
+    {k:"bench_pause",sets:3,reps:4,rest:180},
     {k:"incline_m",sets:3,lo:6,hi:8,rest:150,w1:true},
-    {k:"fly",sets:2,lo:12,hi:15,rest:60},
+    {k:"fly_heavy",sets:2,lo:8,hi:12,rest:90},
+    {k:"hammer_heavy",sets:2,lo:6,hi:10,rest:90},
     {k:"preacher",sets:3,lo:8,hi:12,rest:90},
     {k:"cable_curl",sets:2,lo:10,hi:12,rest:60},
     {k:"lateral",sets:3,lo:12,hi:15,rest:60}]},
